@@ -1,0 +1,20 @@
+[
+    {
+        "title": "Food",
+        "description": "Going",
+        "due_date": "2002-03-03",
+        "priority": "High",
+        "category": "Personal",
+        "completed": false,
+        "created_at": "2025-03-24 19:23:12"
+    },
+    {
+        "title": "Toys",
+        "description": "Buying",
+        "due_date": "2020-09-08",
+        "priority": "High",
+        "category": "Work",
+        "completed": true,
+        "created_at": "2025-03-24 19:23:48"
+    }
+]
