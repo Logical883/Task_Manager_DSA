@@ -2,43 +2,56 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from tkinter import messagebox, simpledialog
+import random
+import uuid
+import hashlib
+import sqlite3
+import re
+import sqlite3
+import hashlib
 
-class Task:
-    def __init__(self, title, description, due_date, priority, category=None):
-        self.title = title
-        self.description = description
-        self.due_date = due_date
-        self.priority = priority
-        self.category = category or "Uncategorized"
-        self.completed = False
-        self.created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    def to_dict(self):
-        return {
-            'title': self.title,
-            'description': self.description,
-            'due_date': self.due_date,
-            'priority': self.priority,
-            'category': self.category,
-            'completed': self.completed,
-            'created_at': self.created_at
-        }
+# Hash password function
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-    @classmethod
-    def from_dict(cls, data):
-        task = cls(
-            data['title'], 
-            data['description'], 
-            data['due_date'], 
-            data['priority'], 
-            data.get('category', 'Uncategorized')
-        )
-        task.completed = data['completed']
-        task.created_at = data.get('created_at', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        return task
+# Connect to database
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+# Insert a new users
+username = "Logical"  # Change this as needed
+password = hash_password("password123")  # Change this as needed
+cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+
+conn.commit()
+conn.close()
+
+print("User added successfully!")
+
+# Connect to database
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+class DatabaseManager:
+    def __init__(self):
+        self.conn = sqlite3.connect('users.db')
+        self.cursor = self.conn.cursor()
+        self.create_table()
+
+    def create_table(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+                                id INTEGER PRIMARY KEY,
+                                username TEXT UNIQUE NOT NULL,
+                                password TEXT NOT NULL)''')
+        self.conn.commit()
+
+    def validate_user(self, username):
+        self.cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        return self.cursor.fetchone()
 
 class LoginWindow(ctk.CTk):
     def __init__(self):
@@ -46,58 +59,110 @@ class LoginWindow(ctk.CTk):
         
         # Configure window
         self.title("TaskMaster - Login")
-        self.geometry("400x300")
+        self.geometry("600x500")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
         
-        # Create login frame
-        self.login_frame = ctk.CTkFrame(self, corner_radius=15)
-        self.login_frame.pack(expand=True, padx=20, pady=20, fill="both")
+        # Background Animation Setup
+        self.canvas = tk.Canvas(self, width=600, height=500, highlightthickness=0, bg='#1a1a1a')
+        self.canvas.pack(fill="both", expand=True)
         
-        # Logo or Title
-        self.logo_label = ctk.CTkLabel(
-            self.login_frame, 
-            text="TaskMaster", 
-            font=("Helvetica", 24, "bold")
-        )
+        # Call background animation methods
+        self.particles = []
+        self.create_background_animation()
+        
+        # Login Frame
+        self.login_frame = ctk.CTkFrame(self, corner_radius=15, fg_color="#1a1a1a", bg_color='#1a1a1a')
+        self.login_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        
+        # Static Logo/Title (No Animation)
+        self.logo_label = ctk.CTkLabel(self.login_frame, text="TaskMaster", font=("Helvetica", 36, "bold"), text_color="white")
         self.logo_label.pack(pady=(40, 20))
         
         # Username Entry
-        self.username_entry = ctk.CTkEntry(
-            self.login_frame, 
-            placeholder_text="Username", 
-            width=300
-        )
+        self.username_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Username", width=300, corner_radius=10)
         self.username_entry.pack(pady=10)
         
-        # Password Entry
-        self.password_entry = ctk.CTkEntry(
-            self.login_frame, 
-            placeholder_text="Password", 
-            show="*", 
-            width=300
-        )
+        # Password Entry (Not Checked)
+        self.password_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Password", show="*", width=300, corner_radius=10)
         self.password_entry.pack(pady=10)
         
         # Login Button
-        self.login_button = ctk.CTkButton(
-            self.login_frame, 
-            text="Login", 
-            command=self.login,
-            width=300
-        )
+        self.login_button = ctk.CTkButton(self.login_frame, text="Login", command=self.login, width=300, corner_radius=10)
         self.login_button.pack(pady=20)
     
+    def create_background_animation(self):
+        """Create a dynamic, moving background with particles."""
+        for _ in range(50):
+            x = random.randint(0, 600)
+            y = random.randint(0, 500)
+            size = random.randint(1, 3)
+            speed = random.uniform(0.5, 2)
+            color = random.choice(['white', 'light blue', 'gray'])
+            particle = self.canvas.create_oval(x, y, x+size, y+size, fill=color, stipple='gray50')
+            self.particles.append((particle, speed))
+        self.animate_background()
+    
+    def animate_background(self):
+        """Animate background particles."""
+        for particle, speed in self.particles:
+            self.canvas.move(particle, 0, speed)
+            coords = self.canvas.coords(particle)
+            if coords[1] > 500:
+                self.canvas.coords(particle, coords[0], 0, coords[2], coords[3] - coords[1])
+        self.after(50, self.animate_background)
+    
     def login(self):
+        """
+        Allow login without password validation.
+        """
         username = self.username_entry.get()
-        password = self.password_entry.get()
         
-        if username and password:
+        if not username:
+            messagebox.showerror("Login Failed", "Please enter a username")
+            return
+
+        # Skip password validation - only check if username exists
+        db = DatabaseManager()
+        user = db.validate_user(username)
+        
+        if user:
             self.destroy()
             app = TaskManagerApp()
             app.mainloop()
         else:
-            messagebox.showerror("Login Failed", "Please enter username and password")
+            messagebox.showerror("Login Failed", "Invalid username")
+
+class Task:
+    def __init__(self, title, description, due_date, priority, category):
+        self.title = title
+        self.description = description
+        self.due_date = due_date
+        self.priority = priority
+        self.category = category
+        self.completed = False
+
+    def to_dict(self):
+        return {
+            "title": self.title,
+            "description": self.description,
+            "due_date": self.due_date,
+            "priority": self.priority,
+            "category": self.category,
+            "completed": self.completed
+        }
+
+    @classmethod
+    def from_dict(cls, task_dict):
+        task = cls(
+            task_dict["title"],
+            task_dict["description"],
+            task_dict["due_date"],
+            task_dict["priority"],
+            task_dict["category"]
+        )
+        task.completed = task_dict["completed"]
+        return task
 
 class TaskManagerApp(ctk.CTk):
     def __init__(self):
@@ -399,6 +464,7 @@ class TaskManagerApp(ctk.CTk):
                 save_button.pack(pady=20)
                 
                 break
+
 
 def main():
     login_window = LoginWindow()
