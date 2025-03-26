@@ -1,7 +1,7 @@
 # Task Manager
 
 ## Overview
-Task Manager is a Python-based application that provides an efficient way to manage tasks using a modern Graphical User Interface (GUI) built with CustomTkinter. The application implements advanced data structures like queues (FIFO) and stacks to provide robust task management features.
+Task Manager is a Python-based application that provides an efficient way to manage tasks using a modern Graphical User Interface (GUI) built with CustomTkinter and Tkinter. The application implements advanced data structures like queues (FIFO) and stacks to provide robust task management features.
 
 ## Features
 - **Modern UI Design:** 
