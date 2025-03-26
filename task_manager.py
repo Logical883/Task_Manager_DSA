@@ -255,7 +255,7 @@ class Task:
 
     def to_dict(self):
         return {
-            "title": self.title,
+            " title": self.title,
             "description": self.description,
             "due_date": self.due_date,
             "priority": self.priority,
@@ -383,11 +383,11 @@ class TaskManagerApp(ctk.CTk):
 
         # Configure columns
         column_configs = [
-            ("Title", 200),
-            ("Priority", 100),
-            ("Due Date", 100),
-            ("Category", 100),
-            ("Status", 100)
+            ("📝 Title", 200),
+            ("🔔 Priority", 100),
+            ("📅 Due Date", 100),
+            ("🏷️ Category", 100),
+            ("✓ Status", 100)
         ]
         for col, width in column_configs:
             self.task_tree.heading(col, text=col)
@@ -666,7 +666,7 @@ class LandingPage(ctk.CTk):
         # Subheading/Instructional Text
         self.subheading = ctk.CTkLabel(
             self.main_frame,
-            text="Tap the menu button to start creating your task lists.",
+            text="Tap the start button to start creating your task lists.",
             font=("Helvetica", 16),
             text_color="#666666"
         )
@@ -675,7 +675,7 @@ class LandingPage(ctk.CTk):
         # Navigation Button (Hamburger Icon)
         self.nav_button = ctk.CTkButton(
             self.main_frame,
-            text="☰ Menu",
+            text="Start",  
             font=("Helvetica", 18),
             fg_color="#007BFF",
             hover_color="#0056b3",
