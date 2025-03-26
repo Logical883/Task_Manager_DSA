@@ -627,13 +627,78 @@ class TaskManagerApp(ctk.CTk):
         self.load_task_list()
 
 
+class LandingPage(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        # Configure window
+        self.title("TaskMaster - Organize Your World")
+        self.geometry("600x600")
+        ctk.set_appearance_mode("light")  # Default to light mode for the landing page
+        ctk.set_default_color_theme("blue")
+
+        # Header Section
+        self.header_frame = ctk.CTkFrame(self, fg_color="#007BFF", height=150, corner_radius=0)
+        self.header_frame.pack(fill="x")
+
+        # Header Text
+        self.header_label = ctk.CTkLabel(
+            self.header_frame,
+            text="TaskMaster",
+            font=("Helvetica", 36, "bold"),
+            text_color="white"
+        )
+        self.header_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+        # Main Content
+        self.main_frame = ctk.CTkFrame(self, fg_color="white", corner_radius=0)
+        self.main_frame.pack(expand=True, fill="both")
+
+        # Main Heading
+        self.main_heading = ctk.CTkLabel(
+            self.main_frame,
+            text="Start Organizing Your World",
+            font=("Helvetica", 24, "bold"),
+            text_color="#333333"
+        )
+        self.main_heading.pack(pady=(50, 10))
+
+        # Subheading/Instructional Text
+        self.subheading = ctk.CTkLabel(
+            self.main_frame,
+            text="Tap the menu button to start creating your task lists.",
+            font=("Helvetica", 16),
+            text_color="#666666"
+        )
+        self.subheading.pack(pady=(10, 30))
+
+        # Navigation Button (Hamburger Icon)
+        self.nav_button = ctk.CTkButton(
+            self.main_frame,
+            text="☰ Menu",
+            font=("Helvetica", 18),
+            fg_color="#007BFF",
+            hover_color="#0056b3",
+            text_color="white",
+            corner_radius=10,
+            command=self.open_login_window  # Navigate to the login window
+        )
+        self.nav_button.pack(pady=20)
+
+    def open_login_window(self):
+        """Open the Login Window."""
+        self.destroy()  # Close the landing page
+        login_window = LoginWindow()
+        login_window.mainloop()
+
+
 def main():
     try:
         # Initialize the database and add a test user
         with DatabaseManager() as db:
             db.add_user("testuser", "password123")
-        login_window = LoginWindow()
-        login_window.mainloop()
+        landing_page = LandingPage()
+        landing_page.mainloop()
     except sqlite3.Error as e:
         messagebox.showerror("Database Error", f"An error occurred while connecting to the database: {e}")
 
